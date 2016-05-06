@@ -1,0 +1,35 @@
+{
+  "project_info": {
+    "project_number": "580320923582",
+    "project_id": "klaviyoplayground"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:580320923582:android:30b2ce350f55b296",
+        "android_client_info": {
+          "package_name": "com.klaviyo.klaviyoplayground"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHgUgRqh0dx_Eo2DQjS3h3KtaK2-iRalc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
