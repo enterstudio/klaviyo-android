@@ -35,67 +35,6 @@
             </intent-filter>
         </activity>
 
-        <!--Required to receive push notifications
-
-
-
-    < Listen & Handles the Push Notifications -->
-        <!--[Start GCM Receiver] -->
-        <receiver
-            android:name="com.google.android.gms.gcm.GcmReceiver"
-            android:exported="true"
-            android:permission="com.google.android.c2dm.permission.SEND" >
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <category android:name="com.example.gcm" />
-            </intent-filter>
-        </receiver>
-        <!-- [End GCM Receiver]  -->
-
-        <receiver android:name="com.klaviyo.klaviyoplayground.KlaviyoGCMReceiver"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="com.klaviyo.klaviyoplayround.GCM_OPEN"></action>
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </receiver>
-
-        <!-- [Start receiver to listen for network connectivity -->
-        <receiver android:name="com.klaviyo.klaviyoplayground.KlaviyoNetworkChangeReceiver">
-            <intent-filter>
-                <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
-            </intent-filter>
-        </receiver>
-
-        <!--[Start GCM Listener Service] -->
-        <service
-            android:name="com.klaviyo.klaviyoplayground.KlaviyoGCMListenerService"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-            </intent-filter>
-        </service>
-        <!-- [End GCM Listener Service] -->
-
-        <!-- [Start Instance ID Listener Service: For Refreshing Tokens] -->
-        <service
-            android:name="com.klaviyo.klaviyoplayground.KlaviyoTokenRefreshListenerService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.android.gms.iid.InstanceID" />
-            </intent-filter>
-        </service>
-        <!-- [End Instance ID Intent Service] -->
-
-        <!-- [Start Intent Service: For Sending tokens to Klaviyo] -->
-        <service
-            android:name="com.klaviyo.klaviyoplayground.KlaviyoRegistrationIntentService"
-            android:exported="false">
-        </service>
-        <!-- [End instance ID ] -->
-
-        <!-- Full Klaviyo Service -->
-        <service android:name="com.klaviyo.klaviyoplayground.Klaviyo$KlaviyoService" />
     </application>
 
 </manifest>

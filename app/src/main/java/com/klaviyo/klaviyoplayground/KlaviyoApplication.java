@@ -3,6 +3,9 @@ package com.klaviyo.klaviyoplayground;
 import android.app.Application;
 import android.content.Intent;
 
+import com.klaviyo.klaviyoandroid.*;
+import com.klaviyo.klaviyoandroid.Klaviyo;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,21 +17,21 @@ public class KlaviyoApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        System.out.println("in Klaviyo Application");
         // Create Klaviyo here
-        // Klaviyo specific stuff
-        Klaviyo instance = Klaviyo.getInstance();
-        instance.setUpWithPublicAPIKey("9BX3wh", getApplicationContext(), "580320923582");
-        instance.setUpUserEmail("katy.keuper@klaviyo.com");
+        Klaviyo.getInstance().setUpWithPublicAPIKey("9BX3wh", getApplicationContext(), "580320923582");
 
+        // Optional: initialize a user's email
+        Klaviyo.getInstance().setUpUserEmail("katy.keuper@klaviyo.com");
+
+        // Optional: if implementing push & want app launch on push open
+        Klaviyo.getInstance().setPushActivity("com.klaviyo.klaviyoplayground.MainActivity");
         try {
             JSONObject test = new JSONObject();
             test.put(Klaviyo.KL_EVENT_TRACK_KEY, "Java testing");
 
             JSONObject customerProperties = new JSONObject();
 
-            instance.trackEvent("Local Java Testing");
-
+            Klaviyo.getInstance().trackEvent("Third party lib event!");
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }

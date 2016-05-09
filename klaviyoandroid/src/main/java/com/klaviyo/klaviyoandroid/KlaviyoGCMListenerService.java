@@ -37,43 +37,34 @@ public class KlaviyoGCMListenerService extends GcmListenerService {
 
     private void parseBundleDataAndSend(Bundle data) {
         try {
-            // swap out that key for the klaviyo constant: all these are required for a push
+            // Minimum mappings required to build a push
             JSONObject json = new JSONObject(data.getString("data"));
             String message = json.getString("message");
             String title = json.getString("title");
-            // swap out that key for a new constant
-            Class cls = Class.forName("com.klaviyo.klaviyoplayground.MainActivity");
-            // other options: sound, icons
-            // could eventually include message type for templating
+
             // Grab the metadata for klaviyo to handle open tracking
             JSONObject metadata = json.getJSONObject("$_k");
+
             // Convert to a bundle
             Bundle klBundle = jsonToBundle(metadata);
-            // send the message
-            sendNotification(message, title, cls, klBundle);
-        } catch (JSONException e) {
-            System.out.println("error in parse data and send" + e);
-            // nothing we can do here. we can't parse the data sent from our servers
-            // this means something went wrong. log it?
-        } catch (ClassNotFoundException ce) {
-            // something went wrong with the class mapping
 
-            // depending how we implement this could be user error
-            System.out.println(ce);
+            // send the message
+            sendNotification(message, title, klBundle);
+        } catch (JSONException e) {
+            // nothing we can do here. we can't parse the data sent from our servers
         }
     }
 
-    private void sendNotification(String message, String title, Class cls, Bundle klBundle) {
-        // tbd once a third party package is created. make sure to test this
-        //Intent intent = new Intent(this, cls);
+    private void sendNotification(String message, String title, Bundle klBundle) {
+        /* Build a notification that will launch the GCM Receiver upon click */
         Intent intent = new Intent(this, KlaviyoGCMReceiver.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        /* If users want to launch their app thye must add this action to the manifest file */
         intent.setAction("com.klaviyo.klaviyoplayround.GCM_OPEN");
         intent.putExtra("$kl_metadata", klBundle);
 
-        //intent.putExtras(klBundle);
-
-        // On Open, Broadcast the event. This won't launch the app.
+        // On Open, Broadcast the event. This won't launch the app unless the action is set.
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 this,
                 0,
@@ -91,8 +82,7 @@ public class KlaviyoGCMListenerService extends GcmListenerService {
                     .setSound(defaultSoundUri)
                     .setSmallIcon(R.drawable.common_plus_signin_btn_text_light)
                     .setContentIntent(pendingIntent)
-                    .setExtras(klBundle); // if clicked, this is the intent that will be executed
-            // the pending intent is where click opens should be handled + any other customization
+                    .setExtras(klBundle);
 
             NotificationManager nm = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             nm.notify(0, notificationBuilder.build());

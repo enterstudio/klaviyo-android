@@ -10,6 +10,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 
+import com.klaviyo.klaviyoandroid.Klaviyo;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,9 +23,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        System.out.println("created main activity");
-
-        Klaviyo.getInstance().trackEvent("Opened main activity");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -60,18 +59,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        System.out.println("pausing main activity");
+        Klaviyo.getInstance().trackEvent("Triggered onPause activity");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        System.out.println("resuming main activity");
+        Klaviyo.getInstance().trackEvent("Resuming activity");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        System.out.println("destroying main activity");
+        Klaviyo.getInstance().trackEvent("Destroying activity");
     }
 }

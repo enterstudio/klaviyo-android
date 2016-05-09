@@ -15,12 +15,11 @@ import java.util.zip.GZIPInputStream;
  * Created by katherinekeuper on 4/27/16.
  */
     /*Refactor to return Boolean*/
-public class InternalKlaviyoTask extends AsyncTask<String, Void, String> {
-    protected boolean sentSuccessfully;
+public class InternalKlaviyoTask extends AsyncTask<String, Void, Boolean> {
 
     @Override
-    protected String doInBackground(String... urls) {
-        String responseString = "true";
+    protected Boolean doInBackground(String... urls) {
+        Boolean responseString = true;
 
         try {
             return sendRequest(urls[0]);
@@ -31,7 +30,7 @@ public class InternalKlaviyoTask extends AsyncTask<String, Void, String> {
     }
 
     @Override
-    protected  void onPostExecute(String result) {
+    protected  void onPostExecute(Boolean result) {
         super.onPostExecute(result);
 
     }
@@ -45,43 +44,37 @@ public class InternalKlaviyoTask extends AsyncTask<String, Void, String> {
         }
     }
 
-    private String sendRequest(String klURL) throws IOException {
+    private Boolean sendRequest(String klURL) throws IOException {
         InputStream is = null;
+
         // look into refactoring response string to be a more concrete instance
         String responseString = "Connection Error";
 
         if (!isKlaviyoConnected()) {
-            sentSuccessfully = false;
-            return responseString;
+            return false;
         } else {
-            try {
-                URL url = new URL(klURL);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setRequestProperty("Accept-Encoding", "gzip");
-                connection.setRequestMethod("GET");
-                connection.setDoInput(true);
-                connection.connect();
-                int response = connection.getResponseCode();
-                if (response == HttpURLConnection.HTTP_OK) {
-                    sentSuccessfully = true;
-                    BufferedReader bf = new BufferedReader((new InputStreamReader(connection.getInputStream())));
-                    StringBuilder sb = new StringBuilder();
-                    String line;
-                    while ((line = bf.readLine()) != null) {
-                        sb.append(line).append("\n");
-                    }
-                    bf.close();
-                    System.out.println("api returned: " + sb.toString());
-                } else {
-                    // this means the call was invalid
-                    sentSuccessfully = false;
+            URL url = new URL(klURL);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("Accept-Encoding", "gzip");
+            connection.setRequestMethod("GET");
+            connection.setDoInput(true);
+            connection.connect();
+            int response = connection.getResponseCode();
+            if (response == HttpURLConnection.HTTP_OK) {
+                BufferedReader bf = new BufferedReader((new InputStreamReader(connection.getInputStream())));
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = bf.readLine()) != null) {
+                    sb.append(line).append("\n");
                 }
-                responseString = "success";
-            } finally {
-                System.out.println("in finally");
+
+                bf.close();
+                return true;
+            } else {
+                // this means the call was invalid
+                return false;
             }
         }
 
-        return responseString;
     }
 }

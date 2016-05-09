@@ -94,11 +94,13 @@ public class Klaviyo {
     private static final String CUSTOMER_PROPERTIES_APPEND_KEY = "$append";
     private static final String CUSTOMER_PROPERTIES_GCM_TOKENS_KEY = "$android_tokens";
     private static final String KL_REGISTER_APN_TOKEN_EVENT = "KL_ReceiveNotificationsDeviceToken";
+    private static final String LAUNCHER_CLASS_KEY = "$kl_push_open_activity";
 
     // GCM Push
     protected String senderID;
     protected Boolean remoteNotificationsEnabled = false;
     private String apnDeviceToken;
+    private String LAUNCHER_CLASS;
 
     // Context is required for android access
     private static Context context;
@@ -149,6 +151,21 @@ public class Klaviyo {
         k.putExtra(KLAVIYO_KEY, apiKey);
         k.putExtra(PUSH_ENABLED_KEY, false);
         context.startService(k);
+    }
+
+    public void setPushActivity(String activityName) {
+        sharedInstance.LAUNCHER_CLASS = activityName;
+
+        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor edit = pref.edit();
+        edit.putString(LAUNCHER_CLASS_KEY, activityName);
+        edit.apply();
+    }
+
+    protected String getPushActivity() {
+        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+        return pref.getString(LAUNCHER_CLASS_KEY, "none");
     }
 
     /* Set up for push */
@@ -466,14 +483,14 @@ public class Klaviyo {
                 String request = apiRequestWithEndpoint(endPoint, item);
 
                 try {
-                    String result = new InternalKlaviyoTask().execute(request).get();
-                    if (result == "Connection Error") {
+                    Boolean result = new InternalKlaviyoTask().execute(request).get();
+                    if (result) {
+                        // Successful send. Remove it from the queue.
+                        toRemove.add(item);
+                    } else {
                         // stop sending data and archive until connection returns
                         isAbleToFlush = false;
                         break;
-                    } else {
-                        // Successful event. Remove it from the queue.
-                        toRemove.add(item);
                     }
                 } catch (InterruptedException | ExecutionException e) {
                     // There was an error connecting. Leave the event in the queue
@@ -638,13 +655,13 @@ public class Klaviyo {
         private JSONObject updatePropertiesDictionary(JSONObject props) throws JSONException {
             JSONObject properties = props;
 
-            // Make sure email exists
+            // Email checks
             if (props.has(KL_PERSON_EMAIL_KEY)) {
                 properties.put(KL_PERSON_EMAIL_KEY, props.getString(KL_PERSON_EMAIL_KEY));
             } else if (emailAddressExists()) {
                 properties.put(KL_PERSON_EMAIL_KEY, sharedInstance.userEmail);
             } else {
-                // use the DeviceID unique key: TBD for anonymous profiles
+                // TBD for anonymous profiles
             }
 
             // If push notifications are used, append them
