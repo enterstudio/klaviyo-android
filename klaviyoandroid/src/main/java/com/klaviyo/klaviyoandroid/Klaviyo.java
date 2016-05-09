@@ -5,40 +5,27 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Looper;
 import android.util.Base64;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.concurrent.ExecutionException;
 
 import android.content.Intent;
 
 /**
- * Created by katherinekeuper on 4/26/16.
+ * Created by Klaviyo on 4/26/16.
  */
 public class Klaviyo {
 
@@ -110,7 +97,7 @@ public class Klaviyo {
     private static final String GCM_KEY = "gcmSenderKey";
     private static final String PUSH_ENABLED_KEY = "klaviyoPushEnabled";
 
-    //setUpWithPublicAPIKey
+    // Keys for IntentService Bundle
     private static final  String FINISH_SETUP_KEY = "setUpWithPublicAPIKey";
     private static final String UNARCHIVE_FLUSH = "$unarchiveAndFlush";
     private static final String ARCHIVE = "$archive";
@@ -141,6 +128,7 @@ public class Klaviyo {
     protected static String getGCMSenderID() {
         return sharedInstance.senderID;
     }
+
     /* Set up for non-push users */
     public void setUpWithPublicAPIKey(String apiKey, Context context) {
         sharedInstance.apiKey = apiKey;
@@ -153,6 +141,9 @@ public class Klaviyo {
         context.startService(k);
     }
 
+    /* Users can pass in a string representing the activity they would like to launch upon notification open
+    *  String has to be explicit, i.e. 'MainActivity' would fail, 'com.klaviyo.klaviyoplayground.MainActivity' works"
+    * */
     public void setPushActivity(String activityName) {
         sharedInstance.LAUNCHER_CLASS = activityName;
 
@@ -163,9 +154,14 @@ public class Klaviyo {
         edit.apply();
     }
 
+    /*  Used by the GCM Receiver to Trigger the designated activity */
     protected String getPushActivity() {
-        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
-        return pref.getString(LAUNCHER_CLASS_KEY, "none");
+        if (sharedInstance.LAUNCHER_CLASS != null) {
+            return sharedInstance.LAUNCHER_CLASS;
+        } else {
+            SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+            return pref.getString(LAUNCHER_CLASS_KEY, "none");
+        }
     }
 
     /* Set up for push */
@@ -278,7 +274,7 @@ public class Klaviyo {
             try {
                 trackEvent(KL_PERSON_OPENED_PUSH, eventDict);
             } catch (JSONException e){
-                /* should not get triggered since we dont make it here unless our json encoding above works*/
+                /* should not get triggered since we don't make it here unless our json encoding above works*/
             }
         }
     }
