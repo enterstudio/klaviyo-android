@@ -1,9 +1,7 @@
 package com.klaviyo.klaviyoandroid;
 
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
@@ -20,7 +18,7 @@ import java.util.Iterator;
 
 /**
  * Created by Klaviyo on 5/2/16.
- * Receives push notifications, builds & sends to the user
+ * Receives push notifications, builds and sends to the user
  */
 public class KlaviyoGCMListenerService extends GcmListenerService {
     @Override
@@ -28,7 +26,9 @@ public class KlaviyoGCMListenerService extends GcmListenerService {
         super.onMessageReceived(from, data);
         /* Grab the Message Dictionary*/
         try {
+            System.out.println("message received");
             JSONObject json = new JSONObject(data.getString("data"));
+            System.out.println("json: " + json);
             parseBundleDataAndSend(data);
         } catch (JSONException e) {
             /*Can't convert to JSON. This means we sent bad data to GCM */

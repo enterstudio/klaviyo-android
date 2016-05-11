@@ -63,9 +63,8 @@ public class Klaviyo {
     public static final String KL_GCM_OPEN = "com.klaviyo.klaviyoplayround.GCM_OPEN";
     protected  static final String KL_GCM_Metadata = "$kl_metadata";
 
-    // API Endpoints:
-    //https://a.klaviyo.com/api
-    private static final String KLAVIYO_SERVER_URL_STRING = "https://8b5c6a48.ngrok.io/api";
+    // API Endpoints
+    private static final String KLAVIYO_SERVER_URL_STRING = "https://a.klaviyo.com/api";
     private static final String KLAVIYO_SERVER_TRACK_ENDPOINT = "/track";
     private static final String KLAVIYO_SERVER_IDENTIFY_ENDPOINT = "/identify";
 
@@ -219,7 +218,7 @@ public class Klaviyo {
     }
 
     /**
-     trackEvent: KL Event tracking for event name, customer & event properties
+     trackEvent: KL Event tracking for event name, customer and event properties
 
      - Parameter eventName: name of the event
      - Parameter customerPropertiesDict: dictionary for user info
@@ -493,7 +492,7 @@ public class Klaviyo {
                 }
             }
 
-            // Remove successful api calls from queue & archive if need be
+            // Remove successful api calls from queue and archive if need be
             queue.removeAll(toRemove);
 
             // Something went wrong. Archive the queue until connectivity returns
