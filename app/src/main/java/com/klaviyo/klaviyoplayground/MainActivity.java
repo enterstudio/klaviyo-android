@@ -16,13 +16,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
-
+    Klaviyo klInstance;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+
+        // Grab dynamically: this will build a new instance
+        klInstance = Klaviyo.getInstance(this);
+        klInstance.trackEvent("Created Main Activity");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -59,18 +64,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        Klaviyo.getInstance().trackEvent("Triggered onPause activity");
+        klInstance.trackEvent("In onPause");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        Klaviyo.getInstance().trackEvent("Resuming activity");
+        klInstance.trackEvent("resuming event");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Klaviyo.getInstance().trackEvent("Destroying activity");
     }
 }

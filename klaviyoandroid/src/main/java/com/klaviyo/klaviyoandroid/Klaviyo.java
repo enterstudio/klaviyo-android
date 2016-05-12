@@ -20,9 +20,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
 import android.content.Intent;
+import android.util.Log;
+import android.util.Property;
 
 /**
  * Created by Klaviyo on 4/26/16.
@@ -61,7 +64,7 @@ public class Klaviyo {
 
     // TBD: Extract
     public static final String KL_GCM_OPEN = "com.klaviyo.klaviyoplayround.GCM_OPEN";
-    protected  static final String KL_GCM_Metadata = "$kl_metadata";
+    protected  static final String KL_GCM_METADATA = "$kl_metadata";
 
     // API Endpoints
     private static final String KLAVIYO_SERVER_URL_STRING = "https://a.klaviyo.com/api";
@@ -86,15 +89,15 @@ public class Klaviyo {
     protected String senderID;
     protected Boolean remoteNotificationsEnabled = false;
     private String apnDeviceToken;
-    private String LAUNCHER_CLASS;
+    private String launcher_class;
 
     // Context is required for android access
-    private static Context context;
+    private Context context;
     private static final int MAX_CONNECTIONS = 5;
     private static final String SHARED_PREF_KEY = "klaviyo";
-    private static final String KLAVIYO_KEY = "klaviyoAPIKey";
-    private static final String GCM_KEY = "gcmSenderKey";
-    private static final String PUSH_ENABLED_KEY = "klaviyoPushEnabled";
+    protected static final String KLAVIYO_KEY = "klaviyoAPIKey";
+    protected static final String GCM_KEY = "gcmSenderKey";
+    protected static final String PUSH_ENABLED_KEY = "klaviyoPushEnabled";
 
     // Keys for IntentService Bundle
     private static final  String FINISH_SETUP_KEY = "setUpWithPublicAPIKey";
@@ -106,33 +109,98 @@ public class Klaviyo {
     private static final String DATE = "$date";
 
     // The internal sharedInstance
-    private static Klaviyo sharedInstance = new Klaviyo( );
 
     // Event Handling
     private String apiKey;
     private String userEmail;
-    private ArrayList<JSONObject> eventsQueue = new ArrayList<JSONObject>();
-    private ArrayList<JSONObject> peopleQueue = new ArrayList<JSONObject>();
 
-    //A private Constructor prevents any other class from instantiating
-    private Klaviyo(){}
 
-    /* Other methods protected by singleton-ness */
-
-    /* Static 'instance' method */
-    public static Klaviyo getInstance() {
-        return sharedInstance;
+    /* Creates Klaviyo using klaviyo-config file + google-json */
+    public static Klaviyo getInstance(Context context) {
+        return new Klaviyo(context);
     }
 
-    protected static String getGCMSenderID() {
-        return sharedInstance.senderID;
+    /* Configure the instance for push
+    *  Requires senderID String + the Designated class for push launch
+    * */
+    /*public void configureForGCM(String senderID, String activityClassName) {
+        this.senderID = senderID;
+        this.launcher_class = activityClassName;
+
+        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor edit = pref.edit();
+        edit.putString(LAUNCHER_CLASS_KEY, activityClassName);
+        edit.apply();
+    }
+*/
+    /* If user does not want to launch app on push open - can use this*/
+/*    public void configureForGCM(String senderID) {
+        this.senderID = senderID;
+
+        // save to shared preferences
+        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor edit = pref.edit();
+        edit.putString(GCM_KEY, senderID);
+        edit.putBoolean(PUSH_ENABLED_KEY, true);
+        edit.apply();
+    }*/
+
+    public void sendUserNotifications(Boolean isEnabled) {
+        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor edit = pref.edit();
+        edit.putBoolean(PUSH_ENABLED_KEY, isEnabled);
+        edit.apply();
+
+        Intent i = new Intent(context, KlaviyoRegistrationIntentService.class);
+        context.startService(i);
     }
 
-    /* Set up for non-push users */
-    public void setUpWithPublicAPIKey(String apiKey, Context context) {
-        sharedInstance.apiKey = apiKey;
-        sharedInstance.context = context;
+    /* Internal class for launching activities on push open */
+    protected String getGCMActivity() {
+        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+        return pref.getString(LAUNCHER_CLASS_KEY, "none");
+    }
+/*
+    protected static String getKlaviyoAPIKey(Context context) {
+        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+        return pref.getString(KLAVIYO_KEY, "none");
+    }
+*/
+    /* If user supplies dynamically */
+/*    private Klaviyo(String apiKey, Context context) {
+        this.apiKey = apiKey;
+        this.context = context;
+        startInitialIntent(apiKey, context);
+    }*/
 
+    /* Build Klaviyo from config file + Google-Services.json */
+    private Klaviyo(Context context) {
+        KlaviyoPropertiesReader kpr = new KlaviyoPropertiesReader(context);
+        Properties p = kpr.getProperties("klaviyoconfig.properties");
+
+        // grab api key: required
+        String apiKey = p.getProperty("klaviyo_api_key", "none");
+
+        // set the api key and context
+        this.apiKey = apiKey;
+        this.context = context;
+
+        // check if push is enabled
+        String sender_id = p.getProperty("gcm_sender_id");
+        this.senderID = sender_id;
+
+        if (sender_id != null) {
+            String launcherClass = p.getProperty("launcher_class_key");
+            if (launcherClass != null) {
+                setPushActivity(launcherClass);
+            }
+        }
+
+        startInitialIntent(apiKey, context);
+    }
+
+    private void startInitialIntent(String apiKey, Context context) {
         Intent k = new Intent(context, KlaviyoService.class);
         k.putExtra(FINISH_SETUP_KEY, true);
         k.putExtra(KLAVIYO_KEY, apiKey);
@@ -140,11 +208,27 @@ public class Klaviyo {
         context.startService(k);
     }
 
+    protected String getGCMSenderID() {
+        return this.senderID;
+    }
+
+    /* Set up for non-push users */
+  /*  protected void setUpWithPublicAPIKey(String apiKey, Context context) {
+        this.apiKey = apiKey;
+        this.context = context;
+
+        Intent k = new Intent(context, KlaviyoService.class);
+        k.putExtra(FINISH_SETUP_KEY, true);
+        k.putExtra(KLAVIYO_KEY, apiKey);
+        k.putExtra(PUSH_ENABLED_KEY, false);
+        context.startService(k);
+    }
+*/
     /* Users can pass in a string representing the activity they would like to launch upon notification open
     *  String has to be explicit, i.e. 'MainActivity' would fail, 'com.klaviyo.klaviyoplayground.MainActivity' works"
     * */
-    public void setPushActivity(String activityName) {
-        sharedInstance.LAUNCHER_CLASS = activityName;
+    private void setPushActivity(String activityName) {
+        this.launcher_class = activityName;
 
         SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
 
@@ -155,8 +239,8 @@ public class Klaviyo {
 
     /*  Used by the GCM Receiver to Trigger the designated activity */
     protected String getPushActivity() {
-        if (sharedInstance.LAUNCHER_CLASS != null) {
-            return sharedInstance.LAUNCHER_CLASS;
+        if (this.launcher_class != null) {
+            return this.launcher_class;
         } else {
             SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
             return pref.getString(LAUNCHER_CLASS_KEY, "none");
@@ -164,11 +248,11 @@ public class Klaviyo {
     }
 
     /* Set up for push */
-    public void setUpWithPublicAPIKey(String apiKey, Context context, String senderID) {
-        sharedInstance.apiKey = apiKey;
-        sharedInstance.context = context;
-        sharedInstance.senderID = senderID;
-        sharedInstance.remoteNotificationsEnabled = true;
+  /*  public void setUpWithPublicAPIKey(String apiKey, Context context, String senderID) {
+        this.apiKey = apiKey;
+        this.context = context;
+        this.senderID = senderID;
+        this.remoteNotificationsEnabled = true;
 
         // set up for push
         Intent i = new Intent(context, KlaviyoRegistrationIntentService.class);
@@ -181,20 +265,26 @@ public class Klaviyo {
         k.putExtra(GCM_KEY, senderID);
         k.putExtra(PUSH_ENABLED_KEY, true);
         context.startService(k);
-    }
+    }*/
+
     protected boolean isApiKeySet() {
-        return (sharedInstance.apiKey != null);
+        return (this.apiKey != null);
     }
 
     /* Archive data if connection drops */
     protected void stopKlaviyoTracking() {
         Intent k = new Intent(context, KlaviyoService.class);
         k.putExtra(ARCHIVE, true);
+        k.putExtra(KLAVIYO_KEY, apiKey);
         context.startService(k);
     }
 
     public void setUpUserEmail(String email) {
-        sharedInstance.userEmail = email;
+        this.userEmail = email;
+        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor edit = pref.edit();
+        edit.putString(KL_PERSON_EMAIL_KEY, email);
+        edit.apply();
     }
 
     /**
@@ -209,6 +299,7 @@ public class Klaviyo {
         // set up the background thread service for flushing queues
         Intent k = new Intent(context, KlaviyoService.class);
         k.putExtra(KL_EVENT, event);
+        k.putExtra(KLAVIYO_KEY, apiKey);
         k.putExtra(KL_EVENT_TRACK_CUSTOMER_PROP_KEY, customerProperties.toString());
         k.putExtra(KL_EVENT_TRACK_PROPERTIES_KEY, propertiesDict.toString());
         k.putExtra(DATE, eventDate);
@@ -251,6 +342,7 @@ public class Klaviyo {
             trackEvent(eventName, new JSONObject());
         } catch (JSONException je) {
             // this would mean our SDK is encoding JSON incorrectly
+            Log.e("klaviyo.klaviyoandroid", "trackEvent unable to process due to json encode error");
         }
     }
 
@@ -267,6 +359,7 @@ public class Klaviyo {
                 eventDict.put(key, value);
             } catch (JSONException e) {
                 /* This is bad. It means the json GCM payload is sent incorrectly */
+                Log.e("klaviyo.klaviyoandroid", "JSONException handlePushOpen: bad payload data received");
             }
         }
         if (eventDict.length() > 0) {
@@ -281,7 +374,7 @@ public class Klaviyo {
     protected void connectivityChanged(Context context) {
         Intent k = new Intent(context, KlaviyoService.class);
 
-        if (!sharedInstance.isApiKeySet()) {
+        if (!this.isApiKeySet()) {
             SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
             String apiKey = pref.getString(KLAVIYO_KEY, "none");
             String senderID = pref.getString(GCM_KEY, "none");
@@ -309,9 +402,8 @@ public class Klaviyo {
         if (deviceToken.isEmpty()) {
             return;
         }
-
         // Update shared instance
-        sharedInstance.apnDeviceToken = deviceToken;
+        this.apnDeviceToken = deviceToken;
 
         JSONObject personDict = new JSONObject();
         JSONObject appendDict = new JSONObject();
@@ -344,6 +436,7 @@ public class Klaviyo {
         // set up the background thread service for flushing queues
         Intent k = new Intent(context, KlaviyoService.class);
         k.putExtra(FINISH_SETUP_KEY, false);
+        k.putExtra(KLAVIYO_KEY, apiKey);
         k.putExtra(KL_PERSON_TRACK_TOKEN_KEY, true);
         k.putExtra(KL_PERSON_PROPERTIES_KEY, personDictionary.toString());
         context.startService(k);
@@ -351,6 +444,9 @@ public class Klaviyo {
 
     /* Nested Service to handle Asynchronous Calling */
     public static class KlaviyoService extends IntentService {
+        private ArrayList<JSONObject> eventsQueue = new ArrayList<JSONObject>();
+        private ArrayList<JSONObject> peopleQueue = new ArrayList<JSONObject>();
+        private String apiKey;
 
         public KlaviyoService() {
             super("KlaviyoService");
@@ -365,8 +461,9 @@ public class Klaviyo {
         * */
         @Override
         protected void onHandleIntent(Intent intent) {
+            this.apiKey = intent.getExtras().getString(KLAVIYO_KEY);
+
             if (intent.getExtras().getBoolean(FINISH_SETUP_KEY)) {
-                String apiKey = intent.getExtras().getString(KLAVIYO_KEY);
                 Boolean pushEnabled = intent.getExtras().getBoolean(PUSH_ENABLED_KEY);
                 String gcmKey = (pushEnabled) ? intent.getExtras().getString(GCM_KEY) : "" ;
                 finishKlaviyoSetUp(apiKey, gcmKey, pushEnabled);
@@ -386,7 +483,7 @@ public class Klaviyo {
             saveUserInfo(apiKey, senderID, push);
 
             //If user is not connected don't flush anything
-            final ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            final ConnectivityManager connectivityManager = (ConnectivityManager) this.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
 
             if (activeNetwork != null) {
@@ -429,7 +526,7 @@ public class Klaviyo {
         }
 
         private void saveUserInfo(String apiKey, String senderID, Boolean isPushEnabled) {
-            SharedPreferences pref = context.getSharedPreferences(SHARED_PREF_KEY, Context.MODE_PRIVATE);
+            SharedPreferences pref = this.getApplicationContext().getSharedPreferences(SHARED_PREF_KEY, Context.MODE_PRIVATE);
             SharedPreferences.Editor edit = pref.edit();
             edit.putString(KLAVIYO_KEY, apiKey);
             edit.putString(GCM_KEY, senderID);
@@ -449,11 +546,11 @@ public class Klaviyo {
         }
 
         private void flushEvents() {
-            flushQueue(sharedInstance.eventsQueue, KLAVIYO_SERVER_TRACK_ENDPOINT);
+            flushQueue(eventsQueue, KLAVIYO_SERVER_TRACK_ENDPOINT);
         }
 
         private void flushPeople() {
-            flushQueue(sharedInstance.peopleQueue, KLAVIYO_SERVER_IDENTIFY_ENDPOINT);
+            flushQueue(peopleQueue, KLAVIYO_SERVER_IDENTIFY_ENDPOINT);
         }
 
         /**
@@ -465,18 +562,16 @@ public class Klaviyo {
             boolean isAbleToFlush = true;
 
             // If network is not available, archive the events
-            if (!isNetworkAvailable(context)) {
+            if (!isNetworkAvailable(this.getApplicationContext())) {
                 archive();
                 return;
             }
 
             ArrayList<JSONObject> currentQueue = queue;
             ArrayList<JSONObject> toRemove = new ArrayList<JSONObject>();
-
             // Grab each item from the queue and send it to klaviyo
             for (JSONObject item : currentQueue) {
                 String request = apiRequestWithEndpoint(endPoint, item);
-
                 try {
                     Boolean result = new InternalKlaviyoTask().execute(request).get();
                     if (result) {
@@ -506,10 +601,10 @@ public class Klaviyo {
         private void archive() {
             /* Only bother archiving if there are events */
             try {
-                if (sharedInstance.eventsQueue.size() > 0) {
+                if (eventsQueue.size() > 0) {
                     archiveEvents();
                 }
-                if (sharedInstance.peopleQueue.size() > 0) {
+                if (peopleQueue.size() > 0) {
                     archivePeople();
                 }
             } catch (IOException io) {
@@ -535,13 +630,13 @@ public class Klaviyo {
                 fw = new FileWriter(file);
                 bw = new BufferedWriter(fw);
                 // write to file and remove from the queue
-                for (JSONObject item : sharedInstance.eventsQueue) {
+                for (JSONObject item : eventsQueue) {
                     bw.write(item.toString());
                     bw.newLine();
-                    sharedInstance.eventsQueue.remove(item);
+                    eventsQueue.remove(item);
                 }
             } catch (IOException io) {
-                io.printStackTrace();
+                //unable to write to file
             } finally {
                 if (bw != null) {
                     bw.close();
@@ -585,9 +680,9 @@ public class Klaviyo {
                 for (String s: lines) {
                     JSONObject newEvent = new JSONObject(s);
                     if (isEvents) {
-                        sharedInstance.eventsQueue.add(newEvent);
+                        eventsQueue.add(newEvent);
                     } else {
-                        sharedInstance.peopleQueue.add(newEvent);
+                        peopleQueue.add(newEvent);
                     }
                 }
             } catch (FileNotFoundException fe) {
@@ -607,21 +702,21 @@ public class Klaviyo {
 
         /* Archive Helpers */
         private String eventFileName() {
-            return "klaviyo-"+sharedInstance.apiKey+"-events";
+            return "klaviyo-"+ this.apiKey +"-events";
         }
 
         private File eventFile() {
             String name = eventFileName();
-            File dir = context.getApplicationContext().getFilesDir();
+            File dir = this.getApplicationContext().getFilesDir();
             return new File(dir, name);
         }
         private String peopleFileName() {
-            return "klaviyo-"+sharedInstance.apiKey+"-people";
+            return "klaviyo-"+this.apiKey+"-people";
         }
 
         private File peopleFile() {
             String name = peopleFileName();
-            File dir = context.getApplicationContext().getFilesDir();
+            File dir = this.getApplicationContext().getFilesDir();
             return new File(dir, name);
         }
 
@@ -641,7 +736,6 @@ public class Klaviyo {
             }
             catch (Exception e)
             {
-                e.printStackTrace();
                 return false;
             }
         }
@@ -654,27 +748,27 @@ public class Klaviyo {
             if (props.has(KL_PERSON_EMAIL_KEY)) {
                 properties.put(KL_PERSON_EMAIL_KEY, props.getString(KL_PERSON_EMAIL_KEY));
             } else if (emailAddressExists()) {
-                properties.put(KL_PERSON_EMAIL_KEY, sharedInstance.userEmail);
+                properties.put(KL_PERSON_EMAIL_KEY, getUserEmail());
             } else {
                 // TBD for anonymous profiles
-            }
-
-            // If push notifications are used, append them
-            if (sharedInstance.apnDeviceToken != null) {
-                JSONObject tokens = new JSONObject();
-                tokens.put(CUSTOMER_PROPERTIES_GCM_TOKENS_KEY, sharedInstance.apnDeviceToken);
-                properties.put(CUSTOMER_PROPERTIES_APPEND_KEY, tokens);
             }
 
             return properties;
         }
 
+        private String getUserEmail() {
+            SharedPreferences pref = getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+            return pref.getString(KL_PERSON_EMAIL_KEY, "");
+        }
+
         private Boolean emailAddressExists() {
-            return sharedInstance.userEmail.length() > 0;
+            SharedPreferences pref = getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+            String email = pref.getString(KL_PERSON_EMAIL_KEY, "");
+            return email.length() > 0;
         }
 
         private String apiRequestWithEndpoint(String endPoint, JSONObject params) {
-            String urlString = sharedInstance.KLAVIYO_SERVER_URL_STRING+endPoint;
+            String urlString = KLAVIYO_SERVER_URL_STRING+endPoint;
 
             String paramString = params.toString();
             byte[] paramBytes = paramString.getBytes();
@@ -701,13 +795,13 @@ public class Klaviyo {
             JSONObject customerPropDict = updatePropertiesDictionary(personDictionary);
             JSONObject trackPersonDict = new JSONObject();
             trackPersonDict.put(KL_PERSON_PROPERTIES_KEY, customerPropDict);
-            trackPersonDict.put(KL_PERSON_TRACK_TOKEN_KEY, sharedInstance.apiKey);
+            trackPersonDict.put(KL_PERSON_TRACK_TOKEN_KEY, apiKey);
             trackPersonDict.put(KL_EVENT_TRACK_SERVICE_KEY, "api");
 
-            sharedInstance.peopleQueue.add(trackPersonDict);
+            peopleQueue.add(trackPersonDict);
 
-            if (sharedInstance.peopleQueue.size() > 500) {
-                sharedInstance.peopleQueue.remove(0);
+            if (peopleQueue.size() > 500) {
+                peopleQueue.remove(0);
             }
 
             flushPeople();
@@ -732,13 +826,13 @@ public class Klaviyo {
             customerProperties = updatePropertiesDictionary(customerProperties);
 
             // If it's a push event, handle differently
-            if (eventName == KL_PERSON_OPENED_PUSH) {
+            if (KL_PERSON_OPENED_PUSH.equals(eventName)) {
                 service = "klaviyo";
             }
 
             // Create the main parameters dictionary
             JSONObject eventParameters = new JSONObject();
-            eventParameters.put(KL_EVENT_TRACK_TOKEN_Key, sharedInstance.apiKey);
+            eventParameters.put(KL_EVENT_TRACK_TOKEN_Key, apiKey);
             eventParameters.put(KL_EVENT_TRACK_KEY, eventName);
             eventParameters.put(KL_EVENT_TRACK_SERVICE_KEY, service);
             eventParameters.put(KL_EVENT_TRACK_CUSTOMER_PROP_KEY, customerProperties);
@@ -752,10 +846,10 @@ public class Klaviyo {
                 eventParameters.put(KL_EVENT_TRACK_TIME_KEY, eventDate);
             }
 
-            sharedInstance.eventsQueue.add(eventParameters);
+            eventsQueue.add(eventParameters);
 
-            if (sharedInstance.eventsQueue.size() > 500) {
-                sharedInstance.eventsQueue.remove(0);
+            if (eventsQueue.size() > 500) {
+                eventsQueue.remove(0);
             }
             flushEvents();
         }

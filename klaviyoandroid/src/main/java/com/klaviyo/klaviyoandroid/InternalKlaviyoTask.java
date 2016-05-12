@@ -61,14 +61,6 @@ public class InternalKlaviyoTask extends AsyncTask<String, Void, Boolean> {
             connection.connect();
             int response = connection.getResponseCode();
             if (response == HttpURLConnection.HTTP_OK) {
-                BufferedReader bf = new BufferedReader((new InputStreamReader(connection.getInputStream())));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = bf.readLine()) != null) {
-                    sb.append(line).append("\n");
-                }
-
-                bf.close();
                 return true;
             } else {
                 // this means the call was invalid

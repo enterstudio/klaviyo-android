@@ -8,6 +8,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.google.android.gms.gcm.GcmListenerService;
 
@@ -26,12 +27,11 @@ public class KlaviyoGCMListenerService extends GcmListenerService {
         super.onMessageReceived(from, data);
         /* Grab the Message Dictionary*/
         try {
-            System.out.println("message received");
             JSONObject json = new JSONObject(data.getString("data"));
-            System.out.println("json: " + json);
             parseBundleDataAndSend(data);
         } catch (JSONException e) {
             /*Can't convert to JSON. This means we sent bad data to GCM */
+            Log.e("klaviyo.klaviyoandroid", "JSONException onMessageReceived: bad payload " + e.toString());
         }
     }
 
@@ -88,7 +88,7 @@ public class KlaviyoGCMListenerService extends GcmListenerService {
             nm.notify(0, notificationBuilder.build());
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e("klaviyo.klaviyoandroid", "NotificationBuilder error: " + e.toString());
         }
     }
 

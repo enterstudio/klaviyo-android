@@ -6,8 +6,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
 
-        <!--Required to receive push notifications
-
+        <!--Required to receive push notifications>
 
 
         < Listen & Handles the Push Notifications -->

@@ -5,6 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 /**
  * Created by Klaviyo on 5/3/16.
@@ -17,10 +18,11 @@ public class KlaviyoGCMReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
 
         String action = intent.getAction();
-        Bundle kBundle = intent.getExtras().getBundle(Klaviyo.KL_GCM_Metadata);
+        Bundle kBundle = intent.getExtras().getBundle(Klaviyo.KL_GCM_METADATA);
 
         // Start the user designated activity
-        String launcherClassName = Klaviyo.getInstance().getPushActivity();
+        String launcherClassName = Klaviyo.getInstance(context).getPushActivity();
+
         try {
             Class launcherClass = Class.forName(launcherClassName);
             Intent i = new Intent(context, launcherClass);
@@ -29,11 +31,12 @@ public class KlaviyoGCMReceiver extends BroadcastReceiver {
             context.startActivity(i);
         } catch (ClassNotFoundException cd) {
             /* class does not exist: either user did not configure this option or they did so incorrectly */
+            Log.e("Klaviyo", "ClassNotFound in GCMReceiver - bad class name passed to Klaviyo");
         }
 
         // If it's receiving a push open, pass that to Klaviyo to handle
-        if (action == Klaviyo.KL_GCM_OPEN && kBundle != null) {
-            Klaviyo.getInstance().handlePushOpen(kBundle);
+        if (Klaviyo.KL_GCM_OPEN.equals(action) && kBundle != null) {
+            Klaviyo.getInstance(context).handlePushOpen(kBundle);
         }
 
     }

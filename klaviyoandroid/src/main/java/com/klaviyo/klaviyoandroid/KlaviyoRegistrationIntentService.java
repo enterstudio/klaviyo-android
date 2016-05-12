@@ -2,6 +2,7 @@ package com.klaviyo.klaviyoandroid;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.util.Log;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.google.android.gms.iid.InstanceID;
@@ -21,15 +22,12 @@ public class KlaviyoRegistrationIntentService extends  IntentService {
     public void onHandleIntent(Intent intent) {
         InstanceID instanceID = InstanceID.getInstance(this);
         try {
-            String tokenString = Klaviyo.getGCMSenderID();
+            String tokenString = Klaviyo.getInstance(getApplicationContext()).getGCMSenderID();
             String token = instanceID.getToken(tokenString, GoogleCloudMessaging.INSTANCE_ID_SCOPE, null);
-            try {
-                Klaviyo.getInstance().addPushDeviceToken(token);
-            } catch (Exception e) {
-                System.out.println(e);
-            }
+            Klaviyo.getInstance(getApplicationContext()).addPushDeviceToken(token);
         } catch (IOException io) {
-        /* Can't grab token */
+            /* Can't grab token */
+            Log.d("klaviyo.klaviyoandroid", "onHandleIntent: unable to grab instance token " + io.toString());
         }
     }
 }

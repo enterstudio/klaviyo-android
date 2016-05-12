@@ -23,10 +23,10 @@ public class KlaviyoNetworkChangeReceiver extends BroadcastReceiver {
         NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
         if (activeNetwork != null) {
             /* Flush the Queues if connectivity switches back on*/
-            Klaviyo.getInstance().connectivityChanged(context);
+            Klaviyo.getInstance(context).connectivityChanged(context);
         } else {
             /* Connectivity switched off. Archive any lingering events */
-            Klaviyo.getInstance().stopKlaviyoTracking();
+            Klaviyo.getInstance(context).stopKlaviyoTracking();
         }
 
     }
