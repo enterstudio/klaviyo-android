@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Base64;
 
 import org.json.JSONException;
@@ -75,6 +76,7 @@ public class Klaviyo {
     private static final String KL_PERSON_ID_KEY = "$id";
     private static final String KL_PERSON_DEVICE_ID_KEY = "$device_id";
     private static final String CUSTOMER_PROPERTIES_ID_KEY = "$anonymous";
+    private static final String KL_SHAREDPREF_ID_KEY = "$klaviyo_ID";
 
     private static final String KL_EVENT_ID_KEY = "$event_id";
     private static final String KL_EVENT_VALUE_KEY = "$value";
@@ -161,18 +163,6 @@ public class Klaviyo {
         SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
         return pref.getString(LAUNCHER_CLASS_KEY, "none");
     }
-/*
-    protected static String getKlaviyoAPIKey(Context context) {
-        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
-        return pref.getString(KLAVIYO_KEY, "none");
-    }
-*/
-    /* If user supplies dynamically */
-/*    private Klaviyo(String apiKey, Context context) {
-        this.apiKey = apiKey;
-        this.context = context;
-        startInitialIntent(apiKey, context);
-    }*/
 
     /* Build Klaviyo from config file + Google-Services.json */
     private Klaviyo(Context context) {
@@ -212,18 +202,6 @@ public class Klaviyo {
         return this.senderID;
     }
 
-    /* Set up for non-push users */
-  /*  protected void setUpWithPublicAPIKey(String apiKey, Context context) {
-        this.apiKey = apiKey;
-        this.context = context;
-
-        Intent k = new Intent(context, KlaviyoService.class);
-        k.putExtra(FINISH_SETUP_KEY, true);
-        k.putExtra(KLAVIYO_KEY, apiKey);
-        k.putExtra(PUSH_ENABLED_KEY, false);
-        context.startService(k);
-    }
-*/
     /* Users can pass in a string representing the activity they would like to launch upon notification open
     *  String has to be explicit, i.e. 'MainActivity' would fail, 'com.klaviyo.klaviyoplayground.MainActivity' works"
     * */
@@ -247,25 +225,6 @@ public class Klaviyo {
         }
     }
 
-    /* Set up for push */
-  /*  public void setUpWithPublicAPIKey(String apiKey, Context context, String senderID) {
-        this.apiKey = apiKey;
-        this.context = context;
-        this.senderID = senderID;
-        this.remoteNotificationsEnabled = true;
-
-        // set up for push
-        Intent i = new Intent(context, KlaviyoRegistrationIntentService.class);
-        context.startService(i);
-
-        // set up the background thread service for flushing queues
-        Intent k = new Intent(context, KlaviyoService.class);
-        k.putExtra(FINISH_SETUP_KEY, true);
-        k.putExtra(KLAVIYO_KEY, apiKey);
-        k.putExtra(GCM_KEY, senderID);
-        k.putExtra(PUSH_ENABLED_KEY, true);
-        context.startService(k);
-    }*/
 
     protected boolean isApiKeySet() {
         return (this.apiKey != null);
@@ -279,12 +238,20 @@ public class Klaviyo {
         context.startService(k);
     }
 
+    /* Call this for user email persistence */
     public void setUpUserEmail(String email) {
         this.userEmail = email;
         SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
         SharedPreferences.Editor edit = pref.edit();
         edit.putString(KL_PERSON_EMAIL_KEY, email);
         edit.apply();
+    }
+
+    public void setUpCustomerID(String id) {
+        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString(id, KL_SHAREDPREF_ID_KEY);
+        editor.apply();;
     }
 
     /**
@@ -746,14 +713,34 @@ public class Klaviyo {
 
             // Email checks
             if (props.has(KL_PERSON_EMAIL_KEY)) {
+                // if user passed in an email, save it and use
+                saveUserEmail(props.getString(KL_PERSON_EMAIL_KEY));
                 properties.put(KL_PERSON_EMAIL_KEY, props.getString(KL_PERSON_EMAIL_KEY));
             } else if (emailAddressExists()) {
+                // email address has been entered and/or saved, so use it
                 properties.put(KL_PERSON_EMAIL_KEY, getUserEmail());
-            } else {
-                // TBD for anonymous profiles
+            }
+
+            // $anonymous ID
+            properties.put(CUSTOMER_PROPERTIES_ID_KEY, androidIDString());
+
+            // Customer ID
+            if (props.has(KL_PERSON_ID_KEY)) {
+                //
+                saveCustomerID(props.getString(KL_PERSON_ID_KEY));
+                properties.put(KL_PERSON_ID_KEY, props.getString(KL_PERSON_ID_KEY));
+            } else if (customerIDExists()) {
+                properties.put(KL_PERSON_ID_KEY, getCustomerID());
             }
 
             return properties;
+        }
+
+        private void saveUserEmail(String email) {
+            SharedPreferences pref = getApplicationContext().getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+            SharedPreferences.Editor edit = pref.edit();
+            edit.putString(KL_PERSON_EMAIL_KEY, email);
+            edit.apply();
         }
 
         private String getUserEmail() {
@@ -761,9 +748,30 @@ public class Klaviyo {
             return pref.getString(KL_PERSON_EMAIL_KEY, "");
         }
 
-        private Boolean emailAddressExists() {
+        private void saveCustomerID(String id) {
+            SharedPreferences pref = getApplicationContext().getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+            SharedPreferences.Editor edit = pref.edit();
+            edit.putString(KL_SHAREDPREF_ID_KEY, id);
+            edit.apply();
+        }
+
+        private String getCustomerID() {
             SharedPreferences pref = getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
-            String email = pref.getString(KL_PERSON_EMAIL_KEY, "");
+            return pref.getString(KL_SHAREDPREF_ID_KEY, "");
+
+        }
+
+        private String androidIDString() {
+            return Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        }
+
+        private Boolean customerIDExists() {
+            String customerID = getCustomerID();
+            return customerID.length() > 0;
+        }
+
+        private Boolean emailAddressExists() {
+            String email = getUserEmail();
             return email.length() > 0;
         }
 
