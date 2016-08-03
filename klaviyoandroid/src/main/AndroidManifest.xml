@@ -10,7 +10,7 @@
 
 
         < Listen & Handles the Push Notifications -->
-        <!--[Start GCM Receiver] -->
+        <!--[Start GCM Receiver]
         <receiver
             android:name="com.google.android.gms.gcm.GcmReceiver"
             android:exported="true"
@@ -20,7 +20,7 @@
                 <category android:name="com.example.gcm" />
             </intent-filter>
         </receiver>
-        <!-- [End GCM Receiver]  -->
+        -->
 
         <receiver android:name="com.klaviyo.klaviyoandroid.KlaviyoGCMReceiver"
             android:exported="false" >
@@ -37,7 +37,13 @@
             </intent-filter>
         </receiver>
 
-        <!--[Start GCM Listener Service] -->
+        <service
+            android:name="com.klaviyo.klaviyoandroid.KlaviyoGCMListenerService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <!--[Start GCM Listener Service]
         <service
             android:name="com.klaviyo.klaviyoandroid.KlaviyoGCMListenerService"
             android:exported="false" >
@@ -45,8 +51,7 @@
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
             </intent-filter>
         </service>
-        <!-- [End GCM Listener Service] -->
-
+        -->
 
         <!-- Full Klaviyo Service -->
         <service android:name="com.klaviyo.klaviyoandroid.Klaviyo$KlaviyoService" />
@@ -58,15 +63,15 @@
         </service>
         <!-- [End instance ID ] -->
 
-        <!-- [Start Instance ID Listener Service: For Refreshing Tokens] -->
+        <!-- [Start Instance ID Listener Service: For Refreshing Tokens]  -->
         <service
             android:name="com.klaviyo.klaviyoandroid.KlaviyoTokenRefreshListenerService"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.google.android.gms.iid.InstanceID" />
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
         </service>
-        <!-- [End Instance ID Intent Service] -->
+
     </application>
 
 </manifest>

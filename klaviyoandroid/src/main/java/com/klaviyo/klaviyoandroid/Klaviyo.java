@@ -68,7 +68,7 @@ public class Klaviyo {
     protected  static final String KL_GCM_METADATA = "$kl_metadata";
 
     // API Endpoints
-    private static final String KLAVIYO_SERVER_URL_STRING = "https://a.klaviyo.com/api";
+    private static final String KLAVIYO_SERVER_URL_STRING = "https://f82ce098.ngrok.io/api"; //"https://a.klaviyo.com/api";
     private static final String KLAVIYO_SERVER_TRACK_ENDPOINT = "/track";
     private static final String KLAVIYO_SERVER_IDENTIFY_ENDPOINT = "/identify";
 

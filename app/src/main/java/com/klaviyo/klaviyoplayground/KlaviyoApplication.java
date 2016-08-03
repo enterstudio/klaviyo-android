@@ -26,18 +26,5 @@ public class KlaviyoApplication extends Application {
         instance.setUpUserEmail("katy.keuper@klaviyo.com");
         instance.trackEvent("refactoring worked!");
 
-        // Optional: initialize a user's email
-
-        // Optional: if implementing push & want app launch on push open
-        try {
-            JSONObject test = new JSONObject();
-            test.put(Klaviyo.KL_EVENT_TRACK_KEY, "Java testing");
-
-            JSONObject customerProperties = new JSONObject();
-
-       //   Klaviyo.getInstance().trackEvent("Third party lib event!");
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
