@@ -27,3 +27,4 @@ dependencies {
     compile project(":klaviyoandroid")
 }
 
+apply plugin: 'com.google.gms.google-services'

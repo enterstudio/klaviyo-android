@@ -6,22 +6,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
 
-        <!--Required to receive push notifications>
-
-
-        < Listen & Handles the Push Notifications -->
-        <!--[Start GCM Receiver]
-        <receiver
-            android:name="com.google.android.gms.gcm.GcmReceiver"
-            android:exported="true"
-            android:permission="com.google.android.c2dm.permission.SEND" >
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-                <category android:name="com.example.gcm" />
-            </intent-filter>
-        </receiver>
-        -->
-
         <receiver android:name="com.klaviyo.klaviyoandroid.KlaviyoGCMReceiver"
             android:exported="false" >
             <intent-filter>
@@ -43,15 +27,6 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-        <!--[Start GCM Listener Service]
-        <service
-            android:name="com.klaviyo.klaviyoandroid.KlaviyoGCMListenerService"
-            android:exported="false" >
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-            </intent-filter>
-        </service>
-        -->
 
         <!-- Full Klaviyo Service -->
         <service android:name="com.klaviyo.klaviyoandroid.Klaviyo$KlaviyoService" />
@@ -65,8 +40,7 @@
 
         <!-- [Start Instance ID Listener Service: For Refreshing Tokens]  -->
         <service
-            android:name="com.klaviyo.klaviyoandroid.KlaviyoTokenRefreshListenerService"
-            android:exported="false">
+            android:name="com.klaviyo.klaviyoandroid.KlaviyoTokenRefreshListenerService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>

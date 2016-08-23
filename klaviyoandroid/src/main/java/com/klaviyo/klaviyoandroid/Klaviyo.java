@@ -68,7 +68,7 @@ public class Klaviyo {
     protected  static final String KL_GCM_METADATA = "$kl_metadata";
 
     // API Endpoints
-    private static final String KLAVIYO_SERVER_URL_STRING = "https://f82ce098.ngrok.io/api"; //"https://a.klaviyo.com/api";
+    private static final String KLAVIYO_SERVER_URL_STRING = "https://a.klaviyo.com/api"; //"https://a.klaviyo.com/api";
     private static final String KLAVIYO_SERVER_TRACK_ENDPOINT = "/track";
     private static final String KLAVIYO_SERVER_IDENTIFY_ENDPOINT = "/identify";
 
@@ -122,40 +122,11 @@ public class Klaviyo {
         return new Klaviyo(context);
     }
 
-    /* Configure the instance for push
-    *  Requires senderID String + the Designated class for push launch
-    * */
-    /*public void configureForGCM(String senderID, String activityClassName) {
-        this.senderID = senderID;
-        this.launcher_class = activityClassName;
-
-        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
-
-        SharedPreferences.Editor edit = pref.edit();
-        edit.putString(LAUNCHER_CLASS_KEY, activityClassName);
-        edit.apply();
-    }
-*/
-    /* If user does not want to launch app on push open - can use this*/
-/*    public void configureForGCM(String senderID) {
-        this.senderID = senderID;
-
-        // save to shared preferences
-        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
-        SharedPreferences.Editor edit = pref.edit();
-        edit.putString(GCM_KEY, senderID);
-        edit.putBoolean(PUSH_ENABLED_KEY, true);
-        edit.apply();
-    }*/
-
     public void sendUserNotifications(Boolean isEnabled) {
         SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
         SharedPreferences.Editor edit = pref.edit();
         edit.putBoolean(PUSH_ENABLED_KEY, isEnabled);
         edit.apply();
-
-        Intent i = new Intent(context, KlaviyoRegistrationIntentService.class);
-        context.startService(i);
     }
 
     /* Internal class for launching activities on push open */

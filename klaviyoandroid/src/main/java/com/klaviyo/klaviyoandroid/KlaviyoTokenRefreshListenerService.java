@@ -2,6 +2,9 @@ package com.klaviyo.klaviyoandroid;
 
 import android.content.Intent;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.FirebaseInstanceIdService;
+
 
 /**
  * Created by Klaviyo on 4/29/16.
@@ -15,8 +18,8 @@ public class KlaviyoTokenRefreshListenerService extends FirebaseInstanceIdServic
     @Override
     public void onTokenRefresh() {
         // Fetch updated Instance ID token & send it to Klaviyo if it has changed
-     //   Intent i = new Intent(this, KlaviyoRegistrationIntentService.class);
-     //   startService(i);
-       // String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+        String token = FirebaseInstanceId.getInstance().getToken();
+        // send this token to Klaviyo
+        Klaviyo.getInstance(getApplicationContext()).addPushDeviceToken(token);
     }
 }

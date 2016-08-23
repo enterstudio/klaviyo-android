@@ -24,11 +24,6 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-        // Grab dynamically: this will build a new instance
-        klInstance = Klaviyo.getInstance(this);
-        klInstance.trackEvent("Created Main Activity");
-
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,13 +59,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        klInstance.trackEvent("In onPause");
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        klInstance.trackEvent("resuming event");
     }
 
     @Override
