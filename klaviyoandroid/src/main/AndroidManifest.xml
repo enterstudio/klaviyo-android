@@ -31,13 +31,6 @@
         <!-- Full Klaviyo Service -->
         <service android:name="com.klaviyo.klaviyoandroid.Klaviyo$KlaviyoService" />
 
-        <!-- [Start Intent Service: For Sending tokens to Klaviyo] -->
-        <service
-            android:name="com.klaviyo.klaviyoandroid.KlaviyoRegistrationIntentService"
-            android:exported="false">
-        </service>
-        <!-- [End instance ID ] -->
-
         <!-- [Start Instance ID Listener Service: For Refreshing Tokens]  -->
         <service
             android:name="com.klaviyo.klaviyoandroid.KlaviyoTokenRefreshListenerService">
