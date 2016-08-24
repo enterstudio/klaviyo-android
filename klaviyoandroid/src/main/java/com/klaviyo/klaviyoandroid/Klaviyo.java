@@ -84,6 +84,7 @@ public class Klaviyo {
 
     private static final String CUSTOMER_PROPERTIES_APPEND_KEY = "$append";
     private static final String CUSTOMER_PROPERTIES_GCM_TOKENS_KEY = "$android_tokens";
+    private static final String CUSTOMER_FCM_TOKEN = "fcm_token";
     private static final String KL_REGISTER_APN_TOKEN_EVENT = "KL_ReceiveNotificationsDeviceToken";
     private static final String LAUNCHER_CLASS_KEY = "$kl_push_open_activity";
 
@@ -343,6 +344,11 @@ public class Klaviyo {
         // Update shared instance
         this.apnDeviceToken = deviceToken;
 
+        // save the push token
+        SharedPreferences pref = context.getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+        SharedPreferences.Editor edit = pref.edit();
+        edit.putString(CUSTOMER_FCM_TOKEN, deviceToken);
+        edit.apply();
         JSONObject personDict = new JSONObject();
         JSONObject appendDict = new JSONObject();
 
@@ -704,7 +710,19 @@ public class Klaviyo {
                 properties.put(KL_PERSON_ID_KEY, getCustomerID());
             }
 
+            // FCM Token
+            String token = getGCMToken();
+            if (!token.isEmpty()) {
+                JSONObject appendDict = new JSONObject();
+                appendDict.put(CUSTOMER_PROPERTIES_GCM_TOKENS_KEY, token);
+                properties.put(CUSTOMER_PROPERTIES_APPEND_KEY, appendDict);
+            }
             return properties;
+        }
+
+        private String getGCMToken() {
+            SharedPreferences pref = getSharedPreferences("klaviyo", Context.MODE_PRIVATE);
+            return pref.getString(CUSTOMER_FCM_TOKEN, "");
         }
 
         private void saveUserEmail(String email) {
