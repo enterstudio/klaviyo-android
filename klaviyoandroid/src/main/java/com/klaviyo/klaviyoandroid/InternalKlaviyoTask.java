@@ -48,7 +48,6 @@ public class InternalKlaviyoTask extends AsyncTask<String, Void, Boolean> {
         InputStream is = null;
 
         // look into refactoring response string to be a more concrete instance
-        String responseString = "Connection Error";
 
         if (!isKlaviyoConnected()) {
             return false;
@@ -60,6 +59,7 @@ public class InternalKlaviyoTask extends AsyncTask<String, Void, Boolean> {
             connection.setDoInput(true);
             connection.connect();
             int response = connection.getResponseCode();
+
             if (response == HttpURLConnection.HTTP_OK) {
                 return true;
             } else {

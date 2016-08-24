@@ -4,10 +4,20 @@ android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
 
+    signingConfigs {
+        config {
+            keyAlias 'KlaviyoKey'
+            keyPassword 'Klaviyo1'
+            storeFile file('/Users/katherinekeuper/keystores/android.jks')
+            storePassword 'Klaviyo1'
+        }
+    }
+
     defaultConfig {
         applicationId "com.klaviyo.klaviyoplayground"
         minSdkVersion 16
         targetSdkVersion 23
+        multiDexEnabled true
         versionCode 1
         versionName "1.0"
     }
@@ -24,6 +34,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.android.support:design:23.2.1'
+    compile "com.google.firebase:firebase-messaging:9.4.0"
     compile project(":klaviyoandroid")
 }
 

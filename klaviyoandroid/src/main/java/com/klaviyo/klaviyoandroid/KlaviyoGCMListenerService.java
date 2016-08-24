@@ -94,7 +94,6 @@ public class KlaviyoGCMListenerService extends FirebaseMessagingService {
                     .setContentText(message)
                     .setAutoCancel(true)
                     .setSound(defaultSoundUri)
-                    .setSmallIcon(R.drawable.common_plus_signin_btn_text_light)
                     .setContentIntent(pendingIntent)
                     .setExtras(klBundle);
 

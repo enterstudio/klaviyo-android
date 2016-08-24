@@ -1,31 +1,35 @@
 {
   "project_info": {
-    "project_number": "120565826019",
-    "firebase_url": "https://klaviyosdk.firebaseio.com",
-    "project_id": "klaviyosdk",
-    "storage_bucket": "klaviyosdk.appspot.com"
+    "project_number": "849756349993",
+    "firebase_url": "https://klaviyoandroid-ea78b.firebaseio.com",
+    "project_id": "klaviyoandroid-ea78b",
+    "storage_bucket": "klaviyoandroid-ea78b.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:120565826019:android:0c0a77b779b7d1e7",
+        "mobilesdk_app_id": "1:849756349993:android:30b2ce350f55b296",
         "android_client_info": {
-          "package_name": "com.klaviyo.klaviyoandroid"
+          "package_name": "com.klaviyo.klaviyoplayground"
         }
       },
       "oauth_client": [
         {
-          "client_id": "120565826019-ggfl17qhhteq2d0t8i4vqichdqb8sk85.apps.googleusercontent.com",
-          "client_type": 3
+          "client_id": "849756349993-spvv07ts1v8g3mvfnd81nrchg91sh78a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.klaviyo.klaviyoplayground",
+            "certificate_hash": "04A4FC0F5ECBBCDB3F2F93FCC24854AC96747772"
+          }
         },
         {
-          "client_id": "120565826019-7iipvl99ogr1ajinq0r96sd8aq3ufki9.apps.googleusercontent.com",
+          "client_id": "849756349993-larhb06ipgjb5o5ltquj71quvliga5p9.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCNS03EE9BNjNdf9Xs4Bqu_8j83N3cOrmg"
+          "current_key": "AIzaSyB8szEoTV8cYESeVRXWxhukD38yplprou4"
         }
       ],
       "services": {
@@ -35,54 +39,6 @@
         "appinvite_service": {
           "status": 1,
           "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 2
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:120565826019:android:30b2ce350f55b296",
-        "android_client_info": {
-          "package_name": "com.klaviyo.klaviyoplayground"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "120565826019-foo5id17d00s81mh0v23mkcppj69su1s.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.klaviyo.klaviyoplayground",
-            "certificate_hash": "04A4FC0F5ECBBCDB3F2F93FCC24854AC96747772"
-          }
-        },
-        {
-          "client_id": "120565826019-ggfl17qhhteq2d0t8i4vqichdqb8sk85.apps.googleusercontent.com",
-          "client_type": 3
-        },
-        {
-          "client_id": "120565826019-7iipvl99ogr1ajinq0r96sd8aq3ufki9.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCNS03EE9BNjNdf9Xs4Bqu_8j83N3cOrmg"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "120565826019-ggfl17qhhteq2d0t8i4vqichdqb8sk85.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
         },
         "ads_service": {
           "status": 2

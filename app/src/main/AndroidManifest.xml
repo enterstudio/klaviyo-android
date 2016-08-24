@@ -5,13 +5,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!--Required for push
-    <permission android:name="com.klaviyo.klaviyoplayground.permission.C2D_MESSAGE"
-        android:protectionLevel="signature" />
-    <uses-permission android:name="com.klaviyo.klaviyoplayground.permission.C2D_MESSAGE" />
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    -->
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -34,6 +27,23 @@
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+
+        <!-- [Start Instance ID Listener Service: For Refreshing Tokens]  -->
+        <service
+            android:exported="false"
+            android:name="com.klaviyo.klaviyoandroid.KlaviyoTokenRefreshListenerService">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:exported="false"
+            android:name="com.klaviyo.klaviyoandroid.KlaviyoGCMListenerService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
 
     </application>
 
