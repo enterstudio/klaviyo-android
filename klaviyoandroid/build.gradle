@@ -13,7 +13,7 @@ ext {
     siteUrl = 'https://www.klaviyo.com'
     gitUrl = 'https://github.com/klaviyo/klaviyo-android'
 
-    libraryVersion = '1.0.3'
+    libraryVersion = '1.0.4'
 
     developerId = 'khinkle14'
     developerName = 'Katy Keuper'
